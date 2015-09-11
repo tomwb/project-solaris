@@ -12,7 +12,7 @@ public class Player : MonoBehaviour {
 	[Tooltip("Ativa o dash")]
 	public bool allowDash = true;
 	[Tooltip("Ativa o jetpack")]
-	public bool allowJetpack = true;
+	public bool allowJetpack = false;
 
 	[Header ("Disparo")]
 	public GameObject[] bullets = new GameObject[]{};
@@ -29,12 +29,14 @@ public class Player : MonoBehaviour {
 	float moveSpeed = 6;
 	
 	[Header ("Deslizar na parede")]
+	[Tooltip("Subida")]
 	public Vector2 wallJumpClimb;
 	public Vector2 wallJumpOff;
+	[Tooltip("salto")]
 	public Vector2 wallLeap;
 	
 	[Tooltip("Velocidade maxima de deslizar")]
-	public float wallSlideSpeedMax = 3;
+	public float wallSlideSpeedMax = 1;
 	public float wallStickTime = .25f;
 	float timeToWallUnstick;
 	
