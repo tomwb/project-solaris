@@ -9,7 +9,7 @@ public class Enemy : MonoBehaviour {
 	GameObject player;
 
 	[Tooltip("Vida")]
-	public float life;
+	public float life = 10;
 
 	[Tooltip("Gravidade, caso não queira deixar 0")]
 	public float gravity = -25;
@@ -173,5 +173,13 @@ public class Enemy : MonoBehaviour {
 		focusArea.x = focusArea.x * transform.localScale.x;
 		focusArea += transform.position;
 		Gizmos.DrawCube ( focusArea, focusAreaSize);
+	}
+
+	public void ApplyDamage( float damage ){
+		Debug.Log (damage);
+		life -= damage;
+		if ( life <= 0 ){
+			Destroy (gameObject);
+		}
 	}
 }
