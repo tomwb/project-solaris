@@ -8,6 +8,8 @@ public class Enemy : MonoBehaviour {
 	Controller2D controller;
 	GameObject player;
 
+	[Tooltip("Vida")]
+	public float life;
 
 	[Tooltip("Gravidade, caso não queira deixar 0")]
 	public float gravity = -25;
@@ -39,7 +41,7 @@ public class Enemy : MonoBehaviour {
 	int firstCollision = 0;
 
 	// Use this for initialization
-	void Start () {
+	public virtual void Start () {
 		controller = GetComponent<Controller2D> ();
 		player = GameObject.FindGameObjectWithTag("Player");
 
@@ -50,10 +52,9 @@ public class Enemy : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	public virtual void Update () {
 
 		if ( ! checkVision() ) {
-			Debug.Log (delayAfterSeePlayerInUse);
 			// caso tenha visto o player recentemente
 			if ( delayAfterSeePlayerInUse > 0 ){
 				delayAfterSeePlayerInUse -= Time.deltaTime;
@@ -69,7 +70,7 @@ public class Enemy : MonoBehaviour {
 
 	}
 
-	void seePlayer(){
+	public void seePlayer(){
 		// por padrão ele não faz nada quando ve o player
 	}
 
@@ -138,8 +139,9 @@ public class Enemy : MonoBehaviour {
 					callNextPoint();
 				}
 			}
-			
-			velocity.y += gravity * Time.deltaTime;
+			if ( ! controller.collisions.below) {
+				velocity.y += gravity * Time.deltaTime;
+			}
 			
 			//cheguei no ponto viro e vou pro outro
 			controller.Move (velocity * Time.deltaTime, Vector2.zero);
@@ -153,7 +155,7 @@ public class Enemy : MonoBehaviour {
 		}
 	}
 
-	void OnDrawGizmos() {
+	public void OnDrawGizmos() {
 		Gizmos.color = new Color (0, 1, 0, .5f);
 		if (localWaypoints != null) {
 

@@ -11,13 +11,19 @@ public class Player : MonoBehaviour {
 	public bool allowWallSliding = true;
 	[Tooltip("Ativa o dash")]
 	public bool allowDash = true;
+	[Tooltip("Ativa o dash no ar")]
+	public bool alowDashInAir = true;
 	[Tooltip("Ativa o jetpack")]
 	public bool allowJetpack = false;
+	[Tooltip("Ativa Arma de fogo")]
+	public bool allowShooter = true;
 
-	[Header ("Disparo")]
-	public GameObject[] bullets = new GameObject[]{};
-//	private int pressShoot = 0;
-//	private bool fired = false;
+	[Header ("Arma de fogo")]
+
+	public GameObject bullet;
+	public float delayShoot = 0.3f;
+	float lastShootTime;
+	bool fired = false;
 
 
 	[Header ("Configurações")]
@@ -53,6 +59,10 @@ public class Player : MonoBehaviour {
 	float timeToDashInUse;
 	public float dashForce = 3f;
 	float dashDirection = 0;
+	float lastTimeClickDash = 0;
+	float catchTimeClickDash = 0.5f;
+	public float delayToUseDashAgain = 1f;
+	float delayToUseDashAgainInUse = 0;
 
 	[Header ("JetPack")]
 	public float jetPackMoveSpeed = 5;
@@ -136,6 +146,38 @@ public class Player : MonoBehaviour {
 				}
 			}
 
+			//dash
+			if ( delayToUseDashAgainInUse <= 0 ) {
+
+				if ( (transform.localScale.x == 1 && Input.GetAxisRaw ("Horizontal") < 0 ) 
+				    || (transform.localScale.x == -1 && Input.GetAxisRaw ("Horizontal") > 0 )) {
+					lastTimeClickDash = 0;
+				}
+
+				if ( Input.GetKeyDown (KeyCode.RightArrow) || Input.GetKeyDown (KeyCode.LeftArrow) ) {
+					if ( Time.time - lastTimeClickDash < catchTimeClickDash ){
+						timeToDashInUse = timeToDash;
+						delayToUseDashAgainInUse = delayToUseDashAgain;
+						dashDirection = (input.x > 0)? 1 : -1;
+					}
+					lastTimeClickDash =  Time.time;
+				}
+			} else {
+				delayToUseDashAgainInUse -= Time.deltaTime;
+			}
+			if ( timeToDashInUse > 0 ){
+				timeToDashInUse -= Time.deltaTime;
+
+				if (! controller.collisions.below && alowDashInAir) {
+					velocity.x += dashForce * dashDirection;
+					velocity.y = (gravity * Time.deltaTime) * -1;
+					timeToDashInUse -= ( 0.5f * Time.deltaTime);
+				} else if ( controller.collisions.below ) {
+					velocity.x += dashForce * dashDirection;
+				} else {
+					timeToDashInUse = 0;
+				}
+			}
 		} else {
 			// usando o jetpack
 			if (input.y > 0) {
@@ -145,28 +187,17 @@ public class Player : MonoBehaviour {
 		}
 		// aplico a gravidade
 		velocity.y += gravity * Time.deltaTime;
+
 		// chamo a função que movimenta de verdade levando em conta as colisões
 		controller.Move (velocity * Time.deltaTime, input);
 		
 		if (controller.collisions.above || controller.collisions.below) {
 			velocity.y = 0;
-
-			//dash
-			if (Input.GetKeyDown (KeyCode.LeftShift) && allowDash) {
-				timeToDashInUse = timeToDash;
-				dashDirection = (input.x > 0)? 1 : -1;
-			}
 		}
-		if ( timeToDashInUse > 0 ){
-			timeToDashInUse -= Time.deltaTime;
-			velocity.x += dashForce * dashDirection;
-		}
-		
 	}
 
 	// inverto o personagem
 	void flip(){
-
 		if ( (transform.localScale.x == 1 && Input.GetAxisRaw ("Horizontal") < 0 ) 
 		    || (transform.localScale.x == -1 && Input.GetAxisRaw ("Horizontal") > 0 )) {
 			velocity.x = 0;
@@ -182,8 +213,11 @@ public class Player : MonoBehaviour {
 
 	// atiro
 	void shoot(){
-		if (Input.GetKeyDown (KeyCode.Space)) {
-			GameObject instance = Instantiate (bullets [0], new Vector2 (transform.position.x, transform.position.y), transform.rotation) as GameObject;
+		fired = false;
+		if ( Input.GetKeyDown (KeyCode.Space) && allowShooter && Time.time - lastShootTime > delayShoot) {
+			fired = true;
+			lastShootTime = Time.time;
+			GameObject instance = Instantiate (bullet, new Vector2 (transform.position.x, transform.position.y), transform.rotation) as GameObject;
 			instance.transform.localScale = new Vector2 (instance.transform.localScale.x * transform.localScale.x, instance.transform.localScale.y);
 		}
 	}
