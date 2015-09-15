@@ -10,6 +10,7 @@ public class Enemy : MonoBehaviour {
 
 	[Tooltip("Vida")]
 	public float health = 10;
+	float defaultHealth;
 
 	[Tooltip("Gravidade, caso não queira deixar 0")]
 	public float gravity = -25;
@@ -40,8 +41,18 @@ public class Enemy : MonoBehaviour {
 	int fromWaypointIndex = 0;
 	int firstCollision = 0;
 
+	[Header ("Morte")]
+	public bool dead = false;
+	public float reviveTime;
+	float deadTime;
+	Vector3 defaultPosition;
+
+
 	// Use this for initialization
 	public virtual void Start () {
+		defaultHealth = health;
+		defaultPosition = transform.position;
+
 		controller = GetComponent<Controller2D> ();
 		player = GameObject.FindGameObjectWithTag("Player");
 
@@ -54,18 +65,27 @@ public class Enemy : MonoBehaviour {
 	// Update is called once per frame
 	public virtual void Update () {
 
-		if ( ! checkVision() ) {
-			// caso tenha visto o player recentemente
-			if ( delayAfterSeePlayerInUse > 0 ){
-				delayAfterSeePlayerInUse -= Time.deltaTime;
+		// caso estiver vivo
+		if (! dead) {
+
+			if (! checkVision ()) {
+				// caso tenha visto o player recentemente
+				if (delayAfterSeePlayerInUse > 0) {
+					delayAfterSeePlayerInUse -= Time.deltaTime;
+				} else {
+					// caso não tenha visto o player
+					defaultMovimentation ();
+				}
 			} else {
-				// caso não tenha visto o player
-				defaultMovimentation ();
+				delayAfterSeePlayerInUse = delayAfterSeePlayer;
+				// caso ver o player
+				seePlayer ();
 			}
-		} else {
-			delayAfterSeePlayerInUse = delayAfterSeePlayer;
-			// caso ver o player
-			seePlayer();
+		} else if (Time.time - deadTime > reviveTime) {
+			gameObject.SetActive (true);
+			dead = false;
+			health = defaultHealth;
+			transform.position = defaultPosition;
 		}
 
 	}
@@ -175,10 +195,13 @@ public class Enemy : MonoBehaviour {
 		Gizmos.DrawCube ( focusArea, focusAreaSize);
 	}
 
-	public void ApplyDamage( float damage, GameObject ){
+	public void ApplyDamage( float damage ){
 		health -= damage;
 		if ( health <= 0 ){
-			Destroy (gameObject);
+//			Destroy (gameObject);
+			gameObject.SetActive (false);
+			dead = true;
+			deadTime = Time.time;
 		}
 
 		// verifico se o tiro veio pelas costas, caso tenha vindo eu viro ele para ficar de cara com o player
