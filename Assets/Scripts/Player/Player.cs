@@ -27,7 +27,6 @@ public class Player : MonoBehaviour {
 	float lastShootTime;
 	bool fired = false;
 
-
 	[Header ("Configurações")]
 	public float maxJumpHeight = 4;
 	public float minJumpHeight = 1;
