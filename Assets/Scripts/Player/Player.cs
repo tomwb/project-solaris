@@ -4,6 +4,8 @@ using System.Collections;
 [RequireComponent (typeof (Controller2D))]
 public class Player : MonoBehaviour {
 
+	GameObject gameControl;
+
 	[Header ("Ativar Habilidades")]
 	[Tooltip("Ativa o duplo pulo")]
 	public bool allowDoubleJump = true;
@@ -60,7 +62,7 @@ public class Player : MonoBehaviour {
 	public float dashForce = 3f;
 	float dashDirection = 0;
 	float lastTimeClickDash = 0;
-	float catchTimeClickDash = 0.5f;
+	float catchTimeClickDash = 0.2f;
 	public float delayToUseDashAgain = 1f;
 	float delayToUseDashAgainInUse = 0;
 
@@ -70,6 +72,8 @@ public class Player : MonoBehaviour {
 	Controller2D controller;
 	
 	void Start() {
+		gameControl = GameObject.FindGameObjectWithTag("GameController");
+
 		controller = GetComponent<Controller2D> ();
 
 		// defino a gravidade baseado no tamanho do pulo que quero e no tempo de queda
@@ -220,5 +224,9 @@ public class Player : MonoBehaviour {
 			GameObject instance = Instantiate (bullet, new Vector2 (transform.position.x, transform.position.y), transform.rotation) as GameObject;
 			instance.transform.localScale = new Vector2 (instance.transform.localScale.x * transform.localScale.x, instance.transform.localScale.y);
 		}
+	}
+
+	public void ApplyDamage( float damage ){
+		gameControl.SendMessage("ApplyDamage",damage);
 	}
 }

@@ -8,6 +8,8 @@ public class Bullet : MonoBehaviour {
 	public float destroyAfterTime = 0.8f;
 	public float damage = 5f;
 	float shotTime;
+	[HideInInspector]
+	public string invoker = "Player";
 
 
 	void Start(){
@@ -23,9 +25,12 @@ public class Bullet : MonoBehaviour {
 
 		RaycastHit2D hit = Physics2D.Raycast (transform.position, transform.forward, 0, collisionMask.value);
 		if (hit) {
-			callDestroy();
-			if (hit.collider.tag == "Enemy") {
-				hit.collider.SendMessage("ApplyDamage",damage);
+			if ( hit.collider.tag != invoker){
+				callDestroy();
+				if ( hit.collider.tag == "Player"
+				    || hit.collider.tag == "Enemy") {
+					hit.collider.SendMessage("ApplyDamage",damage);
+				}
 			}
 		}
 
@@ -36,5 +41,9 @@ public class Bullet : MonoBehaviour {
 
 	void callDestroy(){
 		Destroy (gameObject);
+	}
+
+	public void changeInvoker( string newInvoker ){
+		invoker = newInvoker;
 	}
 }

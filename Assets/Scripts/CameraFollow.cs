@@ -5,6 +5,7 @@ public class CameraFollow : MonoBehaviour {
 	
 	public Controller2D target;
 	public float verticalOffset;
+	public float horizontalOffset;
 	public float lookAheadDstX;
 	public float lookSmoothTimeX;
 	public float verticalSmoothTime;
@@ -27,7 +28,7 @@ public class CameraFollow : MonoBehaviour {
 	void LateUpdate() {
 		focusArea.Update (target.collider.bounds);
 		
-		Vector2 focusPosition = focusArea.centre + Vector2.up * verticalOffset;
+		Vector2 focusPosition = focusArea.centre + (Vector2.up * verticalOffset) + (Vector2.right * horizontalOffset);
 		
 		if (focusArea.velocity.x != 0) {
 			lookAheadDirX = Mathf.Sign (focusArea.velocity.x);

@@ -9,7 +9,7 @@ public class Enemy : MonoBehaviour {
 	GameObject player;
 
 	[Tooltip("Vida")]
-	public float life = 10;
+	public float health = 10;
 
 	[Tooltip("Gravidade, caso não queira deixar 0")]
 	public float gravity = -25;
@@ -70,7 +70,7 @@ public class Enemy : MonoBehaviour {
 
 	}
 
-	public void seePlayer(){
+	public virtual void seePlayer(){
 		// por padrão ele não faz nada quando ve o player
 	}
 
@@ -175,11 +175,13 @@ public class Enemy : MonoBehaviour {
 		Gizmos.DrawCube ( focusArea, focusAreaSize);
 	}
 
-	public void ApplyDamage( float damage ){
-		Debug.Log (damage);
-		life -= damage;
-		if ( life <= 0 ){
+	public void ApplyDamage( float damage, GameObject ){
+		health -= damage;
+		if ( health <= 0 ){
 			Destroy (gameObject);
 		}
+
+		// verifico se o tiro veio pelas costas, caso tenha vindo eu viro ele para ficar de cara com o player
+
 	}
 }
