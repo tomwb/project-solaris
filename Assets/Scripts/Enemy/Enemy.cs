@@ -17,7 +17,7 @@ public class Enemy : MonoBehaviour {
 	public float gravity = -25;
 
 	[Header ("Area de Visão")]
-
+	public bool drawGizmo = true;
 	[Tooltip("tempo de espera para voltar a movimentação")]
 	public float delayAfterSeePlayer;
 	float delayAfterSeePlayerInUse = 0;
@@ -164,23 +164,25 @@ public class Enemy : MonoBehaviour {
 	}
 
 	public void OnDrawGizmos() {
-		Gizmos.color = new Color (0, 1, 0, .5f);
-		if (localWaypoints != null) {
+		if (drawGizmo) {
+			Gizmos.color = new Color (1, 0, 0, .5f);
+			if (localWaypoints != null) {
 
-			float size = .3f;
-			
-			for (int i =0; i < localWaypoints.Length; i ++) {
-				float x = (Application.isPlaying)?globalWaypoints[i] : localWaypoints[i] + transform.position.x;
-				Vector3 globalWaypointPos = new Vector3( x, transform.position.y,transform.position.z );
-				Gizmos.DrawLine(globalWaypointPos - Vector3.up * size, globalWaypointPos + Vector3.up * size);
-				Gizmos.DrawLine(globalWaypointPos - Vector3.left * size, globalWaypointPos + Vector3.left * size);
+				float size = .3f;
+				
+				for (int i =0; i < localWaypoints.Length; i ++) {
+					float x = (Application.isPlaying) ? globalWaypoints [i] : localWaypoints [i] + transform.position.x;
+					Vector3 globalWaypointPos = new Vector3 (x, transform.position.y, transform.position.z);
+					Gizmos.DrawLine (globalWaypointPos - Vector3.up * size, globalWaypointPos + Vector3.up * size);
+					Gizmos.DrawLine (globalWaypointPos - Vector3.left * size, globalWaypointPos + Vector3.left * size);
+				}
 			}
-		}
 
-		Vector3 focusArea = focusAreaPosition;
-		focusArea.x = focusArea.x * transform.localScale.x;
-		focusArea += transform.position;
-		Gizmos.DrawCube ( focusArea, focusAreaSize);
+			Vector3 focusArea = focusAreaPosition;
+			focusArea.x = focusArea.x * transform.localScale.x;
+			focusArea += transform.position;
+			Gizmos.DrawWireCube (focusArea, focusAreaSize);
+		}
 	}
 
 	public void ApplyDamage( float damage ){

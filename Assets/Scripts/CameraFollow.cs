@@ -2,7 +2,8 @@
 using System.Collections;
 
 public class CameraFollow : MonoBehaviour {
-	
+
+	public bool drawGizmo = true;
 	public Controller2D target;
 	public float verticalOffset;
 	public float horizontalOffset;
@@ -53,8 +54,10 @@ public class CameraFollow : MonoBehaviour {
 	}
 	
 	void OnDrawGizmos() {
-		Gizmos.color = new Color (1, 0, 0, .5f);
-		Gizmos.DrawCube (focusArea.centre, focusAreaSize);
+		if (drawGizmo) {
+			Gizmos.color = new Color (0, 0, 1, .5f);
+			Gizmos.DrawWireCube (focusArea.centre, focusAreaSize);
+		}
 	}
 	
 	struct FocusArea {
