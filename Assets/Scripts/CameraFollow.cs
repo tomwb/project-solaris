@@ -4,7 +4,7 @@ using System.Collections;
 public class CameraFollow : MonoBehaviour {
 
 	public bool drawGizmo = true;
-	public Controller2D target;
+	Controller2D target;
 	public float verticalOffset;
 	public float horizontalOffset;
 	public float lookAheadDstX;
@@ -23,6 +23,7 @@ public class CameraFollow : MonoBehaviour {
 	bool lookAheadStopped;
 	
 	void Start() {
+		target = GameObject.FindGameObjectWithTag("Player").transform.GetComponent<Controller2D>();
 		focusArea = new FocusArea (target.collider.bounds, focusAreaSize);
 	}
 	

@@ -10,6 +10,7 @@ public class GameControl : MonoBehaviour {
 
 	public float health;
 	public float money;
+	public int scenne;
 	public Vector3 playerPosition;
 
 	GameObject player;
@@ -21,7 +22,7 @@ public class GameControl : MonoBehaviour {
 			// nao destroi ao trocar de cena
 			DontDestroyOnLoad(gameObject);
 			control = this;
-		} else if( control != this) {
+		} else if( control != this && gameObject != null) {
 			// caso tenha outro controle e n seja este deleto este
 			Destroy (gameObject);
 		}
@@ -36,9 +37,9 @@ public class GameControl : MonoBehaviour {
 
 	void Update() {
 		// ao apertar S salva o jogo
-		if (Input.GetKeyDown (KeyCode.S)) {
-			Save();
-		}
+//		if (Input.GetKeyDown (KeyCode.S)) {
+//			Save();
+//		}
 
 		// ao apertar L faz load no jogo
 		if (Input.GetKeyDown (KeyCode.L)) {
@@ -49,8 +50,12 @@ public class GameControl : MonoBehaviour {
 	public void ApplyDamage( float damage ){
 		health -= damage;
 		if ( health <= 0 ){
-			Application.LoadLevel (Application.loadedLevel);
+			Die();
 		}
+	}
+
+	public void Die(){
+		Application.LoadLevel (scenne);
 	}
 
 	public void Save() {
@@ -59,13 +64,17 @@ public class GameControl : MonoBehaviour {
 		FileStream file = File.Create ( Application.persistentDataPath + "/playerInfo.dat" );
 
 		// faço o de-para atualizar as variaveis
-		control.playerPosition = player.transform.position;
+		player = GameObject.FindGameObjectWithTag("Player");
+		if (player != null) {
+			control.playerPosition = player.transform.position;
+		}
 
 		PlayerData data = new PlayerData();
 		data.health = control.health;
 		data.money = control.money;
-		data.playerPositionX = playerPosition.x;
-		data.playerPositionY = playerPosition.y;
+		data.playerPositionX = control.playerPosition.x;
+		data.playerPositionY = control.playerPosition.y;
+		data.scenne = Application.loadedLevel;
 
 		// salvo
 		bf.Serialize(file, data);
@@ -77,19 +86,24 @@ public class GameControl : MonoBehaviour {
 			// abro o arquivo
 			BinaryFormatter bf = new BinaryFormatter();
 			FileStream file = File.Open ( Application.persistentDataPath + "/playerInfo.dat", FileMode.Open );
-			// descriptografo
-			PlayerData data = (PlayerData) bf.Deserialize(file);
-			file.Close();
 
-			// faço o de-para
-			control.health = data.health;
-			control.money = data.money;
-			control.playerPosition = new Vector3( data.playerPositionX, data.playerPositionY, 0);
+			if ( file.Length  > 0  ) {
+				// descriptografo
+				PlayerData data = (PlayerData) bf.Deserialize(file);
+				file.Close();
 
-			if ( ! player ){
-				player = GameObject.FindGameObjectWithTag("Player");
+				// faço o de-para
+	//			control.health = data.health;
+				control.health = 15f;
+				control.money = data.money;
+				control.scenne = data.scenne;
+				control.playerPosition = new Vector3( data.playerPositionX, data.playerPositionY, 0);
+
+				if ( ! player ){
+					player = GameObject.FindGameObjectWithTag("Player");
+				}
+//				player.transform.position = control.playerPosition;
 			}
-			player.transform.position = control.playerPosition;
 		}
 	}
 }
@@ -98,6 +112,7 @@ public class GameControl : MonoBehaviour {
 class PlayerData{
 	public float health;
 	public float money;
+	public int scenne;
 	public float playerPositionX;
 	public float playerPositionY;
 }

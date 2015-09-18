@@ -74,6 +74,7 @@ public class Player : MonoBehaviour {
 		gameControl = GameObject.FindGameObjectWithTag("GameController");
 
 		controller = GetComponent<Controller2D> ();
+		controller.useColliderFunctions = true;
 
 		// defino a gravidade baseado no tamanho do pulo que quero e no tempo de queda
 		gravity = -(2 * maxJumpHeight) / Mathf.Pow (timeToJumpApex, 2);
@@ -173,7 +174,9 @@ public class Player : MonoBehaviour {
 
 				if (! controller.collisions.below && alowDashInAir) {
 					velocity.x += dashForce * dashDirection;
-					velocity.y = (gravity * Time.deltaTime) * -1;
+					if ( velocity.y <= 0 ){
+						velocity.y = (gravity * Time.deltaTime) * -1;
+					}
 					timeToDashInUse -= ( 0.5f * Time.deltaTime);
 				} else if ( controller.collisions.below ) {
 					velocity.x += dashForce * dashDirection;
@@ -228,4 +231,19 @@ public class Player : MonoBehaviour {
 	public void ApplyDamage( float damage ){
 		gameControl.SendMessage("ApplyDamage",damage);
 	}
+
+
+	public void RaycastOnCollisionEnter( RaycastHit2D hit ){
+		if ( hit.collider.tag == "SaveArea" ) {
+			gameControl.SendMessage("Save");
+		}
+	}
+
+	public void RaycastOnCollisionStay( RaycastHit2D hit ){
+		if ( hit.collider.tag == "Finish" ) {
+//			gameControl.SendMessage("Die");
+//			Debug.Log("stay" + Time.time); 
+		}
+	}
+
 }

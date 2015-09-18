@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Controller2D : RaycastController {
 	
@@ -9,7 +10,12 @@ public class Controller2D : RaycastController {
 	public CollisionInfo collisions;
 	[HideInInspector]
 	public Vector2 playerInput;
-	
+
+	[HideInInspector]
+	public bool useColliderFunctions = false;
+	[HideInInspector]
+	List<RaycastHit2D> ColissionList = new List<RaycastHit2D>();
+
 	public override void Start() {
 		base.Start ();
 		collisions.faceDir = 1;
@@ -38,12 +44,124 @@ public class Controller2D : RaycastController {
 		if (velocity.y != 0) {
 			VerticalCollisions (ref velocity);
 		}
+
+		if ( useColliderFunctions ) {
+			checkColissionFunctions ();
+		}
 		
 		transform.Translate (velocity);
 		
 		if (standingOnPlatform) {
 			collisions.below = true;
 		}
+	}
+
+	void checkColissionFunctions(){
+		List<RaycastHit2D> tempColissionList = new List<RaycastHit2D>();
+
+		float directionX = 0;
+		float directionY = 0;
+		float rayLength = 0.05f;
+		
+		for (int i = 0; i < horizontalRayCount; i ++) {
+
+			// direita
+			directionX = Mathf.Sign (1);
+			Vector2 rayOrigin = (directionX == -1)?raycastOrigins.bottomLeft:raycastOrigins.bottomRight;
+			rayOrigin += Vector2.up * (horizontalRaySpacing * i);
+			RaycastHit2D[] hitCollision = Physics2D.RaycastAll(rayOrigin, Vector2.right * directionX, rayLength);
+//			Debug.DrawRay(rayOrigin, Vector2.right * directionX * rayLength,Color.blue);
+			for (int j = 0; j < hitCollision.Length; j ++) {
+				if ( hitCollision[j] ) {
+
+					// caso colidir e n estiver no array
+					if (hitCollision[j].collider != this.collider && ! RaycastHit2DExistInList(tempColissionList,hitCollision[j])  ) {
+						tempColissionList.Add(hitCollision[j]);
+					}
+				}
+			}
+
+
+			//esquerda
+			directionX = Mathf.Sign (-1);
+			rayOrigin = (directionX == -1)?raycastOrigins.bottomLeft:raycastOrigins.bottomRight;
+			rayOrigin += Vector2.up * (horizontalRaySpacing * i);
+			hitCollision = Physics2D.RaycastAll(rayOrigin, Vector2.right * directionX, rayLength);
+//			Debug.DrawRay(rayOrigin, Vector2.right * directionX * rayLength,Color.blue);
+			for (int j = 0; j < hitCollision.Length; j ++) {
+				if (hitCollision[j]) {
+					if (hitCollision[j].collider != this.collider && ! RaycastHit2DExistInList(tempColissionList,hitCollision[j])  ) {
+						tempColissionList.Add(hitCollision[j]);
+					}
+				}
+			}
+		}
+		
+		for (int i = 0; i < verticalRayCount; i ++) {
+			//cima
+			directionY = Mathf.Sign (1);
+			Vector2 rayOrigin = (directionY == -1)?raycastOrigins.bottomLeft:raycastOrigins.topLeft;
+			rayOrigin += Vector2.right * (verticalRaySpacing * i);
+			RaycastHit2D[] hitCollision = Physics2D.RaycastAll(rayOrigin, Vector2.up * directionY, rayLength);
+			
+//			Debug.DrawRay(rayOrigin, Vector2.up * directionY * rayLength,Color.blue);
+			for (int j = 0; j < hitCollision.Length; j ++) {
+				if (hitCollision[j]) {
+					if (hitCollision[j].collider != this.collider && ! RaycastHit2DExistInList(tempColissionList,hitCollision[j])  ) {
+						tempColissionList.Add(hitCollision[j]);
+					}
+				}
+			}
+
+			//baixo
+			directionY = Mathf.Sign (-1);
+			rayOrigin = (directionY == -1)?raycastOrigins.bottomLeft:raycastOrigins.topLeft;
+			rayOrigin += Vector2.right * (verticalRaySpacing * i);
+			hitCollision = Physics2D.RaycastAll(rayOrigin, Vector2.up * directionY, rayLength);
+			
+//			Debug.DrawRay(rayOrigin, Vector2.up * directionY * rayLength,Color.blue);
+			for (int j = 0; j < hitCollision.Length; j ++) {
+				if (hitCollision[j]) {
+					if (hitCollision[j].collider != this.collider && ! RaycastHit2DExistInList(tempColissionList,hitCollision[j])  ) {
+						tempColissionList.Add(hitCollision[j]);
+					}
+				}
+			}
+		}
+
+
+		// caso seja uma colisao nova que não estava no array, chamo o colisionEnter
+		foreach (RaycastHit2D tempColission in tempColissionList) {
+			if ( ! RaycastHit2DExistInList(ColissionList,tempColission)  ) {
+				this.gameObject.SendMessage("RaycastOnCollisionEnter", tempColission,SendMessageOptions.DontRequireReceiver );
+			}
+		}
+		//caso algo tenha saido do array chamo o colisionOut
+		foreach (RaycastHit2D tempColission in ColissionList) {
+			if ( ! RaycastHit2DExistInList(tempColissionList,tempColission)  ) {
+				this.gameObject.SendMessage("RaycastOnCollisionOut", tempColission,SendMessageOptions.DontRequireReceiver );
+			}
+		}
+
+		// caso ainda esteja colidindo chamo o collisionStay
+		foreach (RaycastHit2D tempColission in tempColissionList) {
+			if ( RaycastHit2DExistInList(ColissionList,tempColission)  ) {
+				this.gameObject.SendMessage("RaycastOnCollisionStay", tempColission,SendMessageOptions.DontRequireReceiver );
+			}
+		}
+
+		ColissionList = tempColissionList;
+
+	}
+
+	bool RaycastHit2DExistInList(List<RaycastHit2D> list, RaycastHit2D value)
+	{
+		foreach (RaycastHit2D temp in list) {
+			if( temp.collider == value.collider ){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	// colisão em X -  horizontal 
@@ -197,7 +315,7 @@ public class Controller2D : RaycastController {
 	void ResetFallingThroughPlatform() {
 		collisions.fallingThroughPlatform = false;
 	}
-	
+
 	public struct CollisionInfo {
 		public bool above, below;
 		public bool left, right;
