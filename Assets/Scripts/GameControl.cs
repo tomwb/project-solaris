@@ -13,6 +13,9 @@ public class GameControl : MonoBehaviour {
 	public int scenne;
 	public Vector3 playerPosition;
 
+	public bool callLoadOnStart = false;
+	public bool ChangeScenneOnStart = false;
+
 	GameObject player;
 
 	// Use this for initialization
@@ -28,7 +31,15 @@ public class GameControl : MonoBehaviour {
 		}
 		player = GameObject.FindGameObjectWithTag("Player");
 		// quando entro pego o salvo
-		Load();
+		if ( control.callLoadOnStart ) {
+			control.callLoadOnStart = false;
+			Load();
+		}
+
+		if ( control.ChangeScenneOnStart ) {
+			control.ChangeScenneOnStart = false;
+			player.transform.position = control.playerPosition;
+		}
 	}
 
 	void OnGUI () {
@@ -55,7 +66,13 @@ public class GameControl : MonoBehaviour {
 	}
 
 	public void Die(){
+		control.callLoadOnStart = true;
 		Application.LoadLevel (scenne);
+	}
+
+	public void changePlayerPositionOnChangeScenne(  Vector3 newPlayerPosition  ){
+		control.ChangeScenneOnStart = true;
+		control.playerPosition = newPlayerPosition;
 	}
 
 	public void Save() {
@@ -102,7 +119,7 @@ public class GameControl : MonoBehaviour {
 				if ( ! player ){
 					player = GameObject.FindGameObjectWithTag("Player");
 				}
-//				player.transform.position = control.playerPosition;
+				player.transform.position = control.playerPosition;
 			}
 		}
 	}

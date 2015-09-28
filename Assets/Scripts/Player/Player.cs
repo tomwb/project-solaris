@@ -237,6 +237,7 @@ public class Player : MonoBehaviour {
 		if ( hit.collider.tag == "SaveArea" ) {
 			gameControl.SendMessage("Save");
 		}
+		hit.collider.SendMessage("OnPlayerCollisionEnter", gameObject,SendMessageOptions.DontRequireReceiver );
 	}
 
 	public void RaycastOnCollisionStay( RaycastHit2D hit ){
