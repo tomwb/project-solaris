@@ -13,8 +13,9 @@ public class GameControl : MonoBehaviour {
 	public int scenne;
 	public Vector3 playerPosition;
 
-	public bool callLoadOnStart = false;
-	public bool ChangeScenneOnStart = false;
+	bool callLoadOnStart = false;
+ 	bool ChangeScenneOnStart = false;
+	public string[] itemList;
 
 	GameObject player;
 
@@ -110,7 +111,6 @@ public class GameControl : MonoBehaviour {
 				file.Close();
 
 				// faço o de-para
-	//			control.health = data.health;
 				control.health = 15f;
 				control.money = data.money;
 				control.scenne = data.scenne;
@@ -132,4 +132,5 @@ class PlayerData{
 	public int scenne;
 	public float playerPositionX;
 	public float playerPositionY;
+	public string[] itemList;
 }

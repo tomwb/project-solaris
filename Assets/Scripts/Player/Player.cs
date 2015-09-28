@@ -95,7 +95,10 @@ public class Player : MonoBehaviour {
 		// caso eu não estiver de jetpack
 		if (! allowJetpack) {
 			bool wallSliding = false;
-			if ((controller.collisions.left || controller.collisions.right) && !controller.collisions.below && velocity.y < 0) {
+			if ( ( ( controller.collisions.left && velocity.x < 0 )
+			      || controller.collisions.right && velocity.x > 0 ) 
+			    && !controller.collisions.below
+			    && velocity.y < 0) {
 				wallSliding = true;
 				
 				if (velocity.y < -wallSlideSpeedMax) {
@@ -234,17 +237,11 @@ public class Player : MonoBehaviour {
 
 
 	public void RaycastOnCollisionEnter( RaycastHit2D hit ){
-		if ( hit.collider.tag == "SaveArea" ) {
-			gameControl.SendMessage("Save");
-		}
 		hit.collider.SendMessage("OnPlayerCollisionEnter", gameObject,SendMessageOptions.DontRequireReceiver );
 	}
 
 	public void RaycastOnCollisionStay( RaycastHit2D hit ){
-		if ( hit.collider.tag == "Finish" ) {
-//			gameControl.SendMessage("Die");
-//			Debug.Log("stay" + Time.time); 
-		}
+
 	}
 
 }

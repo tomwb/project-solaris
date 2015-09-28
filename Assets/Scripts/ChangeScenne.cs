@@ -3,8 +3,6 @@ using System.Collections;
 
 public class ChangeScenne : MonoBehaviour {
 
-	GameObject gameControl;
-
 	public string scenneName;
 
 	public Vector3 positionTarget;
@@ -16,7 +14,7 @@ public class ChangeScenne : MonoBehaviour {
 	
 	// Update is called once per frame
 	public void OnPlayerCollisionEnter ( GameObject player ) {
-		gameControl = GameObject.FindGameObjectWithTag("GameController");
+		GameObject gameControl = GameObject.FindGameObjectWithTag("GameController");
 
 		gameControl.SendMessage ("changePlayerPositionOnChangeScenne", positionTarget);
 		Application.LoadLevel (scenneName);
