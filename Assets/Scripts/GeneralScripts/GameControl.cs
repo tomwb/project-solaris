@@ -9,6 +9,7 @@ public class GameControl : MonoBehaviour {
 	public static GameControl control;
 	public static bool IsPaused = false;
 
+	public float totalHealth = 30f;
 	public float health;
 	public float money;
 	public int scenne;
@@ -23,12 +24,13 @@ public class GameControl : MonoBehaviour {
 
 	// Use this for initialization
 	void Awake () {
+
 		// caso nao tiver o control
-		if(control == null) {
+		if (control == null) {
 			// nao destroi ao trocar de cena
-			DontDestroyOnLoad(gameObject);
+			DontDestroyOnLoad (gameObject);
 			control = this;
-		} else if( control != this && gameObject != null) {
+		} else if (control != this && gameObject != null && Application.loadedLevel != 0) {
 			// caso tenha outro controle e n seja este deleto este
 			Destroy (gameObject);
 		}
@@ -46,17 +48,14 @@ public class GameControl : MonoBehaviour {
 			player.transform.position = control.playerPosition;
 		}
 	}
-
-	void OnGUI () {
-		GUI.Label(new Rect(10,10,100,30), "Health: " + health);
-	}
-
+	
 	// aplico dano
 	public void ApplyDamage( float damage ){
 		health -= damage;
 		if ( health <= 0 ){
 			Die();
 		}
+		this.gameObject.SendMessage ("setLifeBar", ( (100 * health) / totalHealth ) );
 	}
 
 	public void startGame( ){
@@ -127,7 +126,7 @@ public class GameControl : MonoBehaviour {
 				file.Close ();
 
 				// faço o de-para
-				control.health = 30f;
+				control.health = totalHealth;
 				control.money = data.money;
 				control.scenne = data.scenne;
 				control.playerPosition = new Vector3 (data.playerPositionX, data.playerPositionY, 0);

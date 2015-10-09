@@ -17,7 +17,12 @@ public class HudControl : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-
+		if (Application.loadedLevel != 0) {
+			transform.FindChild ("Canvas").gameObject.SetActive (true);
+		} else {
+			transform.FindChild ("Canvas").gameObject.SetActive (false);
+		}
+		
 		// caso a variavel com as frases não esteja vazia
 		if (phrases.Count > 0) {
 			// quando passar o tempo eu troco de frase
@@ -26,12 +31,12 @@ public class HudControl : MonoBehaviour {
 				// caso iterador for maior que a quantidade de frases
 				if ( iterator >= phrases.Count ) {
 					phrases = new List<string>();
-					transform.FindChild ("Canvas").gameObject.SetActive (false);
+					transform.FindChild ("Canvas/MessagePanel").gameObject.SetActive (false);
 
 				} else {
 					//pego o hud de texto
-					transform.FindChild ("Canvas").gameObject.SetActive (true);
-					transform.FindChild ("Canvas/Panel/Text").gameObject.GetComponent<Text> ().text = phrases [iterator];  
+					transform.FindChild ("Canvas/MessagePanel").gameObject.SetActive (true);
+					transform.FindChild ("Canvas/MessagePanel/Text").gameObject.GetComponent<Text> ().text = phrases [iterator];  
 				
 				
 					phraseCallTime = Time.time;
@@ -46,5 +51,9 @@ public class HudControl : MonoBehaviour {
 
 	void callMessageBox( List<string> newPhrases ){
 		phrases = newPhrases;
+	}
+
+	void setLifeBar( int i ){
+		transform.FindChild ("Canvas/Health").gameObject.GetComponent<Slider> ().value = i;
 	}
 }
