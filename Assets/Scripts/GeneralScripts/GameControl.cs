@@ -7,6 +7,7 @@ using System.IO;
 public class GameControl : MonoBehaviour {
 
 	public static GameControl control;
+	public static bool IsPaused = false;
 
 	public float health;
 	public float money;
@@ -18,6 +19,7 @@ public class GameControl : MonoBehaviour {
 	public string[] itemList;
 
 	GameObject player;
+
 
 	// Use this for initialization
 	void Awake () {
@@ -31,12 +33,14 @@ public class GameControl : MonoBehaviour {
 			Destroy (gameObject);
 		}
 		player = GameObject.FindGameObjectWithTag("Player");
+
 		// quando entro pego o salvo
 		if ( control.callLoadOnStart ) {
 			control.callLoadOnStart = false;
 			Load();
 		}
 
+		// quando troco de cena
 		if ( control.ChangeScenneOnStart ) {
 			control.ChangeScenneOnStart = false;
 			player.transform.position = control.playerPosition;
@@ -47,18 +51,7 @@ public class GameControl : MonoBehaviour {
 		GUI.Label(new Rect(10,10,100,30), "Health: " + health);
 	}
 
-	void Update() {
-		// ao apertar S salva o jogo
-//		if (Input.GetKeyDown (KeyCode.S)) {
-//			Save();
-//		}
-
-		// ao apertar L faz load no jogo
-		if (Input.GetKeyDown (KeyCode.L)) {
-			Load();
-		}
-	}
-
+	// aplico dano
 	public void ApplyDamage( float damage ){
 		health -= damage;
 		if ( health <= 0 ){
@@ -66,16 +59,38 @@ public class GameControl : MonoBehaviour {
 		}
 	}
 
-	public void Die(){
-		control.callLoadOnStart = true;
-		Application.LoadLevel (scenne);
+	public void startGame( ){
+		Save ();
+		Application.LoadLevel( "scenne_1" );
 	}
 
+	public void loadGame( ){
+
+		if ( Load () ) {
+			if ( control.scenne == 0 ) {
+				startGame( );
+			} else {
+				control.callLoadOnStart = true;
+				Application.LoadLevel (control.scenne);
+			}
+		} else {
+			startGame( );
+		}
+	}
+
+	// dou reload apartir do ponto salvo
+	public void Die(){
+		control.callLoadOnStart = true;
+		Application.LoadLevel (control.scenne);
+	}
+
+	// troco a posição da variavel que controla a posiçao do player nos loads
 	public void changePlayerPositionOnChangeScenne(  Vector3 newPlayerPosition  ){
 		control.ChangeScenneOnStart = true;
 		control.playerPosition = newPlayerPosition;
 	}
 
+	// salvo o jogo
 	public void Save() {
 		// abro o arquivo
 		BinaryFormatter bf = new BinaryFormatter();
@@ -99,28 +114,34 @@ public class GameControl : MonoBehaviour {
 		file.Close();
 	}
 
-	public void Load(){
-		if ( File.Exists ( Application.persistentDataPath + "/playerInfo.dat" ) ){
+	// dou load
+	public bool Load(){
+		if (File.Exists (Application.persistentDataPath + "/playerInfo.dat")) {
 			// abro o arquivo
-			BinaryFormatter bf = new BinaryFormatter();
-			FileStream file = File.Open ( Application.persistentDataPath + "/playerInfo.dat", FileMode.Open );
+			BinaryFormatter bf = new BinaryFormatter ();
+			FileStream file = File.Open (Application.persistentDataPath + "/playerInfo.dat", FileMode.Open);
 
-			if ( file.Length  > 0  ) {
+			if (file.Length > 0) {
 				// descriptografo
-				PlayerData data = (PlayerData) bf.Deserialize(file);
-				file.Close();
+				PlayerData data = (PlayerData)bf.Deserialize (file);
+				file.Close ();
 
 				// faço o de-para
-				control.health = 15f;
+				control.health = 30f;
 				control.money = data.money;
 				control.scenne = data.scenne;
-				control.playerPosition = new Vector3( data.playerPositionX, data.playerPositionY, 0);
+				control.playerPosition = new Vector3 (data.playerPositionX, data.playerPositionY, 0);
 
-				if ( ! player ){
-					player = GameObject.FindGameObjectWithTag("Player");
+				if (! player) {
+					player = GameObject.FindGameObjectWithTag ("Player");
 				}
-				player.transform.position = control.playerPosition;
+				if (player) {
+					player.transform.position = control.playerPosition;
+				}
 			}
+			return true;
+		} else {
+			return false;
 		}
 	}
 }

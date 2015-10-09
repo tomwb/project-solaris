@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 [RequireComponent (typeof (Controller2D))]
 public class Enemy : MonoBehaviour {
@@ -192,6 +193,22 @@ public class Enemy : MonoBehaviour {
 			gameObject.SetActive (false);
 		}
 
+	
+		transform.FindChild ("Canvas").transform.localScale = new Vector3 (transform.localScale.x, 1f, 1f);
+		
+
+		GameObject hitText = transform.FindChild ("Canvas/Hit").gameObject;
+		GameObject temp = Instantiate (hitText) as GameObject;
+		
+		RectTransform tempRect = temp.GetComponent<RectTransform> ();
+		temp.transform.SetParent (transform.FindChild ("Canvas"));
+		
+		tempRect.transform.localPosition = hitText.transform.localPosition;
+		tempRect.transform.localScale = hitText.transform.localScale;
+		tempRect.transform.localRotation = hitText.transform.localRotation;
+		temp.GetComponent<Text> ().text = " - " + damage + " Hp";  
+		temp.SetActive (true);
+		Destroy (temp, 2.0f);
 		// verifico se o tiro veio pelas costas, caso tenha vindo eu viro ele para ficar de cara com o player
 
 	}
