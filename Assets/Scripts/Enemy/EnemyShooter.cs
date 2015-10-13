@@ -31,8 +31,9 @@ public class EnemyShooter : Enemy {
 			fired = true;
 			lastShootTime = Time.time;
 			GameObject instance = Instantiate (bullet, new Vector2 (transform.position.x, transform.position.y), transform.rotation) as GameObject;
-			instance.SendMessage("changeInvoker","Enemy");
+			instance.SendMessage("changeInvoker",gameObject);
 			instance.transform.localScale = new Vector2 (instance.transform.localScale.x * transform.localScale.x, instance.transform.localScale.y);
+
 		}
 	}
 }

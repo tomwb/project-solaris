@@ -24,8 +24,15 @@ public class Player : MonoBehaviour {
 
 	public GameObject bullet;
 	public float delayShoot = 0.3f;
+	public int maxShootInScreen = 3;
+	int shootInScreen = 0;
 	float lastShootTime;
 	bool fired = false;
+
+	[Header ("Ataque meele")]
+	public float distanceMeele = 2.5f;
+	public float damageMeele = 5f;
+	public LayerMask enemyLayer;
 
 	[Header ("Configurações")]
 	public float maxJumpHeight = 4;
@@ -80,11 +87,13 @@ public class Player : MonoBehaviour {
 		gravity = -(2 * maxJumpHeight) / Mathf.Pow (timeToJumpApex, 2);
 		maxJumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
 		minJumpVelocity = Mathf.Sqrt (2 * Mathf.Abs (gravity) * minJumpHeight);
+
+		shootInScreen = 0;
 	}
 	
 	void Update() {
 		flip ();
-		shoot ();
+		atack ();
 
 		Vector2 input = new Vector2 (Input.GetAxisRaw ("Horizontal"), Input.GetAxisRaw ("Vertical"));
 		int wallDirX = (controller.collisions.left) ? -1 : 1;
@@ -220,14 +229,56 @@ public class Player : MonoBehaviour {
 		}
 	}
 
+	void atack(){
+		//verifico se vai ser meele
+		Debug.DrawRay (transform.position, Vector2.right * transform.localScale.x * distanceMeele, Color.red);
+		Debug.DrawRay (transform.position, (Vector2.up * ( distanceMeele / 2)) + (Vector2.right * transform.localScale.x * ( distanceMeele / 2) )  , Color.red);
+		Debug.DrawRay (transform.position, (Vector2.down * ( distanceMeele / 2)) + (Vector2.right * transform.localScale.x * ( distanceMeele / 2) ), Color.red);
+
+		RaycastHit2D hitCollisionRight = Physics2D.Raycast(transform.position, Vector2.right * transform.localScale.x, distanceMeele,enemyLayer);
+		RaycastHit2D hitCollisionUp = Physics2D.Raycast(transform.position, Vector2.up + (Vector2.right * transform.localScale.x) , distanceMeele / 2, enemyLayer);
+		RaycastHit2D hitCollisionDown = Physics2D.Raycast(transform.position, Vector2.down + (Vector2.right * transform.localScale.x), distanceMeele / 2, enemyLayer);
+		// caso seja meele
+		if ( hitCollisionRight ) {
+			Meele ( hitCollisionRight.collider.gameObject );
+		} else if ( hitCollisionUp ) {
+			Meele ( hitCollisionUp.collider.gameObject );
+		} else if ( hitCollisionDown ) {
+			Meele ( hitCollisionDown.collider.gameObject	);
+		} else {
+			// caso não seja
+			Shoot ();
+		}
+	}
+
+	void Meele( GameObject enemy ) {
+		if (Input.GetKeyDown (KeyCode.Space)) {
+			enemy.SendMessage("ApplyDamage",damageMeele );
+			GetComponent<Animator>().SetTrigger("meeleAtack");
+		}
+	}
+
 	// atiro
-	void shoot(){
+	void Shoot(){
 		fired = false;
 		if ( Input.GetKeyDown (KeyCode.Space) && allowShooter && Time.time - lastShootTime > delayShoot) {
 			fired = true;
-			lastShootTime = Time.time;
-			GameObject instance = Instantiate (bullet, new Vector2 (transform.position.x, transform.position.y), transform.rotation) as GameObject;
-			instance.transform.localScale = new Vector2 (instance.transform.localScale.x * transform.localScale.x, instance.transform.localScale.y);
+			// caso tenha chegado ao limite de tiros 
+			if ( shootInScreen < maxShootInScreen ) {
+				shootInScreen++;
+				lastShootTime = Time.time;
+				GameObject instance = Instantiate (bullet, new Vector2 (transform.position.x, transform.position.y), transform.rotation) as GameObject;
+				instance.SendMessage("changeInvoker",gameObject);
+				instance.transform.localScale = new Vector2 (instance.transform.localScale.x * transform.localScale.x, instance.transform.localScale.y);
+
+			}
+		}
+	}
+
+	public void destroyShoot( ){
+		shootInScreen--;
+		if (shootInScreen < 0) {
+			shootInScreen = 0;
 		}
 	}
 

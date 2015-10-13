@@ -19,6 +19,7 @@ public class Enemy : MonoBehaviour {
 
 	[Header ("Area de Visão")]
 	public bool drawGizmo = true;
+	public LayerMask visionMask;
 	[Tooltip("tempo de espera para voltar a movimentação")]
 	public float delayAfterSeePlayer;
 	float delayAfterSeePlayerInUse = 0;
@@ -43,6 +44,8 @@ public class Enemy : MonoBehaviour {
 	int fromWaypointIndex = 0;
 	int firstCollision = 0;
 
+	bool varSeePlayer = false;
+
 	// Use this for initialization
 	public virtual void Start () {
 		defaultHealth = health;
@@ -66,11 +69,14 @@ public class Enemy : MonoBehaviour {
 			} else {
 				// caso não tenha visto o player
 				defaultMovimentation ();
+				varSeePlayer = false;
 			}
 		} else {
 			delayAfterSeePlayerInUse = delayAfterSeePlayer;
 			// caso ver o player
 			seePlayer ();
+
+			varSeePlayer = true;
 		}
 	}
 
@@ -101,7 +107,7 @@ public class Enemy : MonoBehaviour {
 		    && player.transform.position.y <= top ) {
 
 			// jogo um raycast para ver se algum objeto na frente dele
-			RaycastHit2D hit = Physics2D.Linecast(transform.position, player.transform.position, controller.collisionMask);
+			RaycastHit2D hit = Physics2D.Linecast(transform.position, player.transform.position, visionMask);
 			Debug.DrawLine(transform.position, player.transform.position, Color.magenta);
 			if (hit.collider.tag == "Player") {
 				return true;
@@ -187,6 +193,13 @@ public class Enemy : MonoBehaviour {
 	}
 
 	public void ApplyDamage( float damage ){
+
+		// caso n tenha visto o player é critico
+		if ( ! varSeePlayer ) {
+			damage = damage * 2;
+			transform.localScale = new Vector2(  transform.localScale.x * -1, transform.localScale.y );
+		}
+
 		health -= damage;
 		if ( health <= 0 ){
 			transform.parent.SendMessage("Die");
@@ -195,7 +208,6 @@ public class Enemy : MonoBehaviour {
 
 	
 		transform.FindChild ("Canvas").transform.localScale = new Vector3 (transform.localScale.x, 1f, 1f);
-		
 
 		GameObject hitText = transform.FindChild ("Canvas/Hit").gameObject;
 		GameObject temp = Instantiate (hitText) as GameObject;
@@ -209,7 +221,6 @@ public class Enemy : MonoBehaviour {
 		temp.GetComponent<Text> ().text = " - " + damage + " Hp";  
 		temp.SetActive (true);
 		Destroy (temp, 2.0f);
-		// verifico se o tiro veio pelas costas, caso tenha vindo eu viro ele para ficar de cara com o player
 
 	}
 }

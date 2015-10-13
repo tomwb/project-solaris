@@ -79,6 +79,7 @@ public class GameControl : MonoBehaviour {
 
 	// dou reload apartir do ponto salvo
 	public void Die(){
+		Load ();
 		control.callLoadOnStart = true;
 		Application.LoadLevel (control.scenne);
 	}
